@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  web:
+    build: .
+    command: python manage.py runserver 0.0.0.0:8001
+    volumes:
+      - .:/app
+    working_dir: /app/jobportal
+    ports:
+      - "8001:8001"
+    environment:
+      - DEBUG=True
+      - DJANGO_SETTINGS_MODULE=jobportal.settings
+      - DATABASE_URL=postgresql://jobportal:rianne13!@db:5432/jobportal
+      - SECRET_KEY=your-secret-key-here
+      - ALLOWED_HOSTS=localhost,127.0.0.1
+    depends_on:
+      - db
+      - mailhog
+
+  db:
+    image: postgres:13
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=jobportal
+      - POSTGRES_USER=jobportal
+      - POSTGRES_PASSWORD=rianne13!
+    ports:
+      - "5433:5432"
+
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "1026:1025"
+      - "8026:8025"
+
+volumes:
+  postgres_data: 
