@@ -1,0 +1,172 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block title %}Recruiter Sign Up | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-success text-white text-center py-3">
+                    <h3 class="mb-0">Recruiter Sign Up</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% get_providers as socialaccount_providers %}
+                    
+                    {% if socialaccount_providers %}
+                    <div class="social-login mb-4">
+                        <p class="text-center mb-3">{% trans "Sign up with one of your existing accounts:" %}</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            {% for provider in socialaccount_providers %}
+                            <a href="{% provider_login_url provider.id process='login' %}?next={% url 'users:recruiter_dashboard' %}" 
+                               class="btn {% if provider.id == 'google' %}btn-danger{% elif provider.id == 'github' %}btn-dark{% elif provider.id == 'linkedin' %}btn-primary{% else %}btn-secondary{% endif %}">
+                                {% if provider.id == 'google' %}
+                                <i class="fab fa-google me-2"></i>
+                                {% elif provider.id == 'github' %}
+                                <i class="fab fa-github me-2"></i>
+                                {% elif provider.id == 'linkedin' %}
+                                <i class="fab fa-linkedin me-2"></i>
+                                {% else %}
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                {% endif %}
+                                {{ provider.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        <div class="separator text-center mb-3">
+                            <span class="bg-white px-3 text-muted">{% trans "or" %}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    {% if messages %}
+                    <div class="messages mb-3">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }}">
+                            {{ message }}
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'users:recruiter_signup' %}" id="signup-form">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.username.id_for_label }}" class="form-label">Username</label>
+                            {{ form.username }}
+                            {% if form.username.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.username.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.email.id_for_label }}" class="form-label">Email</label>
+                            {{ form.email }}
+                            {% if form.email.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.email.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.company_name.id_for_label }}" class="form-label">Company Name</label>
+                            {{ form.company_name }}
+                            {% if form.company_name.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.company_name.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password1.id_for_label }}" class="form-label">Password</label>
+                            {{ form.password1 }}
+                            {% if form.password1.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.password1.errors.0 }}
+                            </div>
+                            {% endif %}
+                            {% if form.password1.help_text %}
+                            <div class="form-text">{{ form.password1.help_text|safe }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.password2.id_for_label }}" class="form-label">Confirm Password</label>
+                            {{ form.password2 }}
+                            {% if form.password2.errors %}
+                            <div class="invalid-feedback d-block">
+                                {{ form.password2.errors.0 }}
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">Sign Up</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <p class="mb-0">Already have an account? <a href="{% url 'users:recruiter_login' %}" class="text-success">Sign In</a></p>
+                    <p class="mt-2 mb-0">Are you a job seeker? <a href="{% url 'users:applicant_signup' %}" class="text-success">Sign up as Job Seeker</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .separator {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .separator::before,
+    .separator::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .separator::before {
+        margin-right: 0.25em;
+    }
+    
+    .separator::after {
+        margin-left: 0.25em;
+    }
+
+    .form-control {
+        padding: 0.75rem;
+    }
+    .invalid-feedback {
+        display: block;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Ensure CSRF token is set in cookie
+    var csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+    document.cookie = 'csrftoken=' + csrftoken + ';path=/';
+});
+</script>
+{% endblock %}
+

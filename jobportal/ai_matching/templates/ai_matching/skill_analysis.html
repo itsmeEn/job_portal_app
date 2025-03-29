@@ -1,0 +1,189 @@
+{% extends 'base.html' %}
+
+{% block title %}Skill Analysis | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-chart-bar me-2"></i>Skill Analysis</h2>
+            <p class="lead">Analyze your skills and see how they match with job market demands</p>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-tools me-2"></i>Your Skills</h5>
+                </div>
+                <div class="card-body">
+                    {% if user_skills %}
+                    <div class="d-flex flex-wrap">
+                        {% for skill in user_skills %}
+                        <span class="badge bg-light text-dark m-1 p-2">{{ skill }}</span>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-circle fa-3x text-muted mb-3"></i>
+                        <h5>No Skills Listed</h5>
+                        <p class="text-muted">You haven't added any skills to your profile yet.</p>
+                        <a href="{% url 'users:edit_profile' %}" class="btn btn-primary mt-2">Add Skills</a>
+                    </div>
+                    {% endif %}
+                </div>
+                {% if user_skills %}
+                <div class="card-footer">
+                    <a href="{% url 'edit_profile' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-edit me-1"></i>Update Skills
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="col-md-6 mb-4">
+            <div class="card h-100">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-fire me-2"></i>Top Skills in Demand</h5>
+                </div>
+                <div class="card-body">
+                    {% if top_skills %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Skill</th>
+                                    <th>Demand</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for skill, count in top_skills %}
+                                <tr>
+                                    <td>{{ skill }}</td>
+                                    <td>
+                                        <div class="progress">
+                                            <div class="progress-bar bg-primary skill-progress" 
+                                                 role="progressbar" 
+                                                 data-count="{{ count }}"
+                                                 aria-valuenow="{{ count }}" 
+                                                 aria-valuemin="0" 
+                                                 aria-valuemax="10">
+                                                {{ count }}
+                                            </div>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <p class="text-muted">No data available on in-demand skills.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12 mb-4">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Skills Gap Analysis</h5>
+                </div>
+                <div class="card-body">
+                    {% if missing_skills %}
+                    <p>Based on our analysis of the job market, here are some in-demand skills you might want to develop:</p>
+                    <div class="d-flex flex-wrap mb-4">
+                        {% for skill in missing_skills %}
+                        <div class="skill-recommendation m-2 p-3 bg-light rounded">
+                            <h6>{{ skill }}</h6>
+                            <a href="https://www.google.com/search?q=learn+{{ skill|urlencode }}" target="_blank" class="btn btn-sm btn-outline-primary mt-2">
+                                <i class="fas fa-graduation-cap me-1"></i>Learn
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>Adding these skills to your profile could increase your job match rate by up to 40%.
+                    </div>
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <h5>Great Job!</h5>
+                        <p class="text-muted">Your skills align well with current market demands.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-book me-2"></i>Learning Resources</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Online Courses</h5>
+                                    <p class="card-text">Enhance your skills with online courses from top platforms.</p>
+                                    <ul class="list-unstyled">
+                                        <li><a href="https://www.coursera.org/" target="_blank">Coursera</a></li>
+                                        <li><a href="https://www.udemy.com/" target="_blank">Udemy</a></li>
+                                        <li><a href="https://www.edx.org/" target="_blank">edX</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Certifications</h5>
+                                    <p class="card-text">Get certified to validate your skills and knowledge.</p>
+                                    <ul class="list-unstyled">
+                                        <li><a href="https://www.microsoft.com/en-us/learning/certification-overview.aspx" target="_blank">Microsoft Certifications</a></li>
+                                        <li><a href="https://aws.amazon.com/certification/" target="_blank">AWS Certifications</a></li>
+                                        <li><a href="https://cloud.google.com/certification" target="_blank">Google Cloud Certifications</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title">Practice Platforms</h5>
+                                    <p class="card-text">Practice and improve your skills with hands-on exercises.</p>
+                                    <ul class="list-unstyled">
+                                        <li><a href="https://www.hackerrank.com/" target="_blank">HackerRank</a></li>
+                                        <li><a href="https://leetcode.com/" target="_blank">LeetCode</a></li>
+                                        <li><a href="https://www.kaggle.com/" target="_blank">Kaggle</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.skill-progress').forEach(function(progressBar) {
+            const count = progressBar.dataset.count;
+            progressBar.style.width = (count * 10) + '%';
+        });
+    });
+</script>
+{% endblock %}
+

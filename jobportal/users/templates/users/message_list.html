@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block title %}Messages | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-10 offset-md-1">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-envelope me-2"></i>Messages</h4>
+                </div>
+                <div class="card-body p-0">
+                    {% if conversations_with_other_user %}
+                    <div class="list-group list-group-flush">
+                        {% for item in conversations_with_other_user %}
+                        <a href="{% url 'users:conversation_detail' item.conversation.id %}" class="list-group-item list-group-item-action conversation-list-item">
+                            <div class="row align-items-center">
+                                <div class="col-auto">
+                                    {% if item.other_user.profile.profile_picture %}
+                                    <img src="{{ item.other_user.profile.profile_picture.url }}" alt="{{ item.other_user.username }}" class="rounded-circle" width="50" height="50">
+                                    {% else %}
+                                    <div class="rounded-circle bg-light d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
+                                        <i class="fas fa-user text-secondary"></i>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="col">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">
+                                            {% if item.conversation.messages.filter.is_read == False and item.conversation.messages.last.sender != user %}
+                                            <span class="unread-indicator"></span>
+                                            {% endif %}
+                                            {{ item.other_user.get_full_name|default:item.other_user.username }}
+                                        </h6>
+                                        <small class="text-muted">{{ item.conversation.updated_at|timesince }} ago</small>
+                                    </div>
+                                    <p class="mb-1 text-truncate">
+                                        {% if item.conversation.messages.last %}
+                                        {% if item.conversation.messages.last.sender == user %}
+                                        <span class="text-muted">You: </span>
+                                        {% endif %}
+                                        {{ item.conversation.messages.last.content }}
+                                        {% else %}
+                                        <span class="text-muted">No messages yet</span>
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-comments fa-4x text-muted mb-3"></i>
+                        <h5>No Conversations</h5>
+                        <p class="text-muted">You don't have any conversations yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

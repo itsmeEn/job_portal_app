@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block title %}Notifications | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h4 class="mb-0"><i class="fas fa-bell me-2"></i>Notifications</h4>
+                </div>
+                <div class="card-body">
+                    {% if notifications %}
+                    <div class="list-group">
+                        {% for notification in notifications %}
+                        <a href="{{ notification.link }}" class="list-group-item list-group-item-action">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1">{{ notification.title }}</h6>
+                                <small class="text-muted">{{ notification.created_at|timesince }} ago</small>
+                            </div>
+                            <p class="mb-1">{{ notification.message }}</p>
+                            <small class="text-muted">
+                                {% if notification.notification_type == 'APPLICATION_STATUS' %}
+                                <i class="fas fa-clipboard-check me-1 text-info"></i>Application Status
+                                {% elif notification.notification_type == 'NEW_APPLICATION' %}
+                                <i class="fas fa-file-alt me-1 text-success"></i>New Application
+                                {% elif notification.notification_type == 'INTERVIEW_SCHEDULED' %}
+                                <i class="fas fa-calendar-check me-1 text-warning"></i>Interview
+                                {% elif notification.notification_type == 'JOB_RECOMMENDATION' %}
+                                <i class="fas fa-thumbs-up me-1 text-primary"></i>Recommendation
+                                {% elif notification.notification_type == 'MESSAGE' %}
+                                <i class="fas fa-envelope me-1 text-secondary"></i>Message
+                                {% endif %}
+                            </small>
+                        </a>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-bell-slash fa-4x text-muted mb-3"></i>
+                        <h5>No Notifications</h5>
+                        <p class="text-muted">You don't have any notifications at the moment.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

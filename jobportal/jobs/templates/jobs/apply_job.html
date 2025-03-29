@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+
+{% block title %}Apply for {{ job.title }} | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-paper-plane me-2"></i>Apply for Job</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h5>{{ job.title }}</h5>
+                        <p class="text-muted">{{ job.company.name }} - {{ job.location }}</p>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="id_resume" class="form-label">Resume</label>
+                            {% if user.profile.resume %}
+                            <div class="mb-2">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" id="use_profile_resume" name="use_profile_resume" checked>
+                                    <label class="form-check-label" for="use_profile_resume">
+                                        Use resume from my profile (<a href="{{ user.profile.resume.url }}" target="_blank">view</a>)
+                                    </label>
+                                </div>
+                            </div>
+                            <div id="resume_upload_container" style="display: none;">
+                                {{ form.resume }}
+                                <div class="form-text">Upload your resume (PDF, DOC, DOCX)</div>
+                            </div>
+                            {% else %}
+                            {{ form.resume }}
+                            <div class="form-text">Upload your resume (PDF, DOC, DOCX)</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="id_cover_letter" class="form-label">Cover Letter</label>
+                            {{ form.cover_letter }}
+                            <div class="form-text">Explain why you're a good fit for this position</div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'job_detail' job.id %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Submit Application</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+    // Toggle resume upload field based on checkbox
+    document.addEventListener('DOMContentLoaded', function() {
+        var useProfileResumeCheckbox = document.getElementById('use_profile_resume');
+        var resumeUploadContainer = document.getElementById('resume_upload_container');
+        
+        if (useProfileResumeCheckbox) {
+            useProfileResumeCheckbox.addEventListener('change', function() {
+                if (this.checked) {
+                    resumeUploadContainer.style.display = 'none';
+                } else {
+                    resumeUploadContainer.style.display = 'block';
+                }
+            });
+        }
+    });
+</script>
+{% endblock %}
+{% endblock %}
+

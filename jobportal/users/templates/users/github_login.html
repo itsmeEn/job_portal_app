@@ -1,0 +1,105 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Sign In with GitHub - Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-body p-5">
+                    <!-- Logo Section -->
+                    <div class="text-center mb-4">
+                        <img src="{% static 'img/github-mark.png' %}" alt="GitHub Logo" class="mb-3" style="width: 60px;">
+                        <h2 class="font-weight-bold">Sign In Via GitHub</h2>
+                        <p class="text-muted">Connect your GitHub account to access Worksy</p>
+                    </div>
+
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- GitHub Login Button -->
+                    <div class="d-grid gap-3">
+                        <a href="{% url 'social:begin' 'github' %}{% if request.GET.next %}?next={{ request.GET.next }}{% endif %}" 
+                           class="btn btn-dark btn-lg">
+                            <i class="fab fa-github me-2"></i>Continue with GitHub
+                        </a>
+                    </div>
+
+                    <!-- Divider -->
+                    <div class="position-relative my-4">
+                        <hr class="my-4">
+                        <div class="position-absolute top-50 start-50 translate-middle bg-white px-3">
+                            <span class="text-muted">or</span>
+                        </div>
+                    </div>
+
+                    <!-- Alternative Options -->
+                    <div class="text-center">
+                        <p class="mb-3">Don't want to use GitHub?</p>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'users:applicant_login' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-user-tie me-2"></i>Login as Job Seeker
+                            </a>
+                            <a href="{% url 'users:recruiter_login' %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-building me-2"></i>Login as Recruiter
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    By continuing, you agree to our 
+                    <a href="#" class="text-decoration-none">Terms of Service</a> and 
+                    <a href="#" class="text-decoration-none">Privacy Policy</a>
+                </p>
+                <p class="text-muted">
+                    New to Worksy? 
+                    <a href="{% url 'users:applicant_signup' %}" class="text-decoration-none">Create an account</a>
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn-dark {
+    background-color: #24292e;
+    border-color: #24292e;
+}
+
+.btn-dark:hover {
+    background-color: #2f363d;
+    border-color: #2f363d;
+}
+</style>
+{% endblock %} 

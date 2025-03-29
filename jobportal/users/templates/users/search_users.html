@@ -1,0 +1,113 @@
+{% extends 'base.html' %}
+
+{% block title %}Search Users | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h2><i class="fas fa-search me-2"></i>Search Users</h2>
+            <p class="lead">Find job seekers and recruiters on the platform</p>
+        </div>
+    </div>
+    
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <form method="get" action="{% url 'users:search_users' %}">
+                        <div class="input-group">
+                            <input type="text" name="q" class="form-control" placeholder="Search by name, username, or skills" value="{{ query }}">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Search
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-md-12">
+            {% if query %}
+            <h3>Search Results for "{{ query }}"</h3>
+            {% endif %}
+            
+            {% if users %}
+            <div class="row">
+                {% for user in users %}
+                <div class="col-md-4 mb-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center mb-3">
+                                {% if user.profile.profile_picture %}
+                                <img src="{{ user.profile.profile_picture.url }}" alt="{{ user.username }}" class="rounded-circle me-3" style="width: 60px; height: 60px; object-fit: cover;">
+                                {% else %}
+                                <div class="rounded-circle bg-light d-flex align-items-center justify-content-center me-3" style="width: 60px; height: 60px;">
+                                    <i class="fas fa-user fa-2x text-secondary"></i>
+                                </div>
+                                {% endif %}
+                                <div>
+                                    <h5 class="card-title mb-0">{{ user.get_full_name|default:user.username }}</h5>
+                                    <p class="card-text text-muted">
+                                        {% if user.profile.role == 'APPLICANT' %}
+                                        <i class="fas fa-user-graduate me-1"></i>Job Seeker
+                                        {% elif user.profile.role == 'RECRUITER' %}
+                                        <i class="fas fa-user-tie me-1"></i>Recruiter
+                                        {% endif %}
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            {% if user.profile.location %}
+                            <p class="card-text">
+                                <i class="fas fa-map-marker-alt me-2 text-muted"></i>{{ user.profile.location }}
+                            </p>
+                            {% endif %}
+                            
+                            {% if user.profile.skills %}
+                            <div class="mb-3">
+                                <p class="card-text mb-1"><strong>Skills:</strong></p>
+                                <div class="d-flex flex-wrap">
+                                    {% for skill in user.profile.skills.split|slice:":5" %}
+                                    <span class="badge bg-light text-dark m-1">{{ skill }}</span>
+                                    {% endfor %}
+                                    {% if user.profile.skills.split|length > 5 %}
+                                    <span class="badge bg-light text-dark m-1">+{{ user.profile.skills.split|length|add:"-5" }} more</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            {% endif %}
+                            
+                            <div class="d-grid gap-2">
+                                <a href="{% url 'users:public_profile' user.username %}" class="btn btn-outline-primary">
+                                    <i class="fas fa-user me-1"></i>View Profile
+                                </a>
+                                <a href="{% url 'users:start_conversation' user.id %}" class="btn btn-outline-secondary">
+                                    <i class="fas fa-envelope me-1"></i>Send Message
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-search fa-4x text-muted mb-3"></i>
+                <h5>No Users Found</h5>
+                <p class="text-muted">
+                    {% if query %}
+                    No users match your search criteria. Try a different search term.
+                    {% else %}
+                    Enter a search term to find users.
+                    {% endif %}
+                </p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block title %}Job Seeker Login | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h3 class="mb-0">Job Seeker Login</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% get_providers as socialaccount_providers %}
+                    
+                    {% if socialaccount_providers %}
+                    <div class="social-login mb-4">
+                        <p class="text-center mb-3">{% trans "Sign in with one of your existing accounts:" %}</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            {% for provider in socialaccount_providers %}
+                            <a href="{% provider_login_url provider.id process='login' %}?next={% url 'users:applicant_dashboard' %}" 
+                               class="btn {% if provider.id == 'google' %}btn-danger{% elif provider.id == 'github' %}btn-dark{% elif provider.id == 'linkedin' %}btn-primary{% else %}btn-secondary{% endif %}">
+                                {% if provider.id == 'google' %}
+                                <i class="fab fa-google me-2"></i>
+                                {% elif provider.id == 'github' %}
+                                <i class="fab fa-github me-2"></i>
+                                {% elif provider.id == 'linkedin' %}
+                                <i class="fab fa-linkedin me-2"></i>
+                                {% else %}
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                {% endif %}
+                                {{ provider.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        <div class="separator text-center mb-3">
+                            <span class="bg-white px-3 text-muted">{% trans "or" %}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <form method="post" action="{% url 'users:applicant_login' %}">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="username" class="form-label">Username</label>
+                            {{ form.username }}
+                        </div>
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Password</label>
+                            {{ form.password }}
+                        </div>
+                        <button type="submit" class="btn btn-primary">Login</button>
+                    </form>
+                    
+                    <hr>
+                    <div class="text-center">
+                        <p>Don't have an account? <a href="{% url 'users:applicant_signup' %}">Sign up as Job Seeker</a></p>
+                        <p>Are you a recruiter? <a href="{% url 'users:recruiter_login' %}">Login as Recruiter</a></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-body">
+                    <h5 class="card-title">Job Seeker Features</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-search text-primary me-3"></i>
+                            <span>Browse and apply to thousands of jobs</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-magic text-primary me-3"></i>
+                            <span>Get AI-powered job recommendations</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-robot text-primary me-3"></i>
+                            <span>Use AI resume assistant to improve your resume</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-chart-bar text-primary me-3"></i>
+                            <span>Analyze your skills and identify gaps</span>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="fas fa-clipboard-list text-primary me-3"></i>
+                            <span>Track your job applications</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .separator {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .separator::before,
+    .separator::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .separator::before {
+        margin-right: 0.25em;
+    }
+    
+    .separator::after {
+        margin-left: 0.25em;
+    }
+</style>
+{% endblock %}
+

@@ -1,0 +1,82 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Logout - Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-lg border-0 rounded-lg">
+                <div class="card-body p-5 text-center">
+                    <!-- Logo Section -->
+                    <div class="mb-4">
+                        <i class="fas fa-sign-out-alt fa-3x text-danger mb-3"></i>
+                        <h2 class="font-weight-bold">Logout Confirmation</h2>
+                        <p class="text-muted">Are you sure you want to logout?</p>
+                    </div>
+
+                    {% if messages %}
+                    <div class="messages mb-4">
+                        {% for message in messages %}
+                        <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <!-- Logout Button -->
+                    <div class="d-grid gap-3">
+                        <form method="post" action="{% url 'users:logout' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger btn-lg">
+                                <i class="fas fa-sign-out-alt me-2"></i>Confirm Logout
+                            </button>
+                        </form>
+                        <a href="{% url 'users:home' %}" class="btn btn-outline-secondary">
+                            <i class="fas fa-times me-2"></i>Cancel
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Additional Information -->
+            <div class="text-center mt-4">
+                <p class="text-muted">
+                    Thank you for using Worksy. We hope to see you again soon!
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.card {
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 1rem 3rem rgba(0,0,0,.175)!important;
+}
+
+.btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.fa-sign-out-alt {
+    color: #dc3545;
+    transition: all 0.3s ease-in-out;
+}
+
+.card:hover .fa-sign-out-alt {
+    transform: scale(1.1);
+}
+</style>
+{% endblock %} 

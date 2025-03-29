@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Account Activated - Worksy{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Account Activated Successfully!</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-check-circle text-success" style="font-size: 64px;"></i>
+                    <h5 class="mt-4">Thank you for verifying your email address</h5>
+                    <p class="mb-4">Your account has been successfully activated. You can now log in and start using Worksy.</p>
+                    
+                    {% if user.is_applicant %}
+                        <a href="{% url 'users:applicant_login' %}" class="btn btn-primary">Log In as Job Seeker</a>
+                    {% else %}
+                        <a href="{% url 'users:recruiter_login' %}" class="btn btn-primary">Log In as Recruiter</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

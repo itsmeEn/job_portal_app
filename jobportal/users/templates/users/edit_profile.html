@@ -1,0 +1,111 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Profile | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 offset-md-2">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Profile</h4>
+                </div>
+                <div class="card-body">
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <h5 class="mb-3">Basic Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-6 mb-3">
+                                <label for="id_first_name" class="form-label">First Name</label>
+                                <input type="text" name="first_name" id="id_first_name" value="{{ form.first_name.value|default:'' }}" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_last_name" class="form-label">Last Name</label>
+                                <input type="text" name="last_name" id="id_last_name" value="{{ form.last_name.value|default:'' }}" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_email" class="form-label">Email</label>
+                                <input type="email" name="email" id="id_email" value="{{ form.email.value|default:'' }}" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_phone_number" class="form-label">Phone Number</label>
+                                {{ form.phone_number }}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="id_location" class="form-label">Location</label>
+                                {{ form.location }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">Profile Details</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                <label for="id_bio" class="form-label">Bio</label>
+                                {{ form.bio }}
+                                <div class="form-text">A brief description about yourself.</div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_profile_picture" class="form-label">Profile Picture</label>
+                                {% if user.profile.profile_picture %}
+                                <div class="mb-2">
+                                    <img src="{{ user.profile.profile_picture.url }}" alt="Current profile picture" class="img-thumbnail" style="max-height: 100px;">
+                                </div>
+                                {% endif %}
+                                <input type="file" name="profile_picture" id="id_profile_picture" class="form-control">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="id_resume" class="form-label">Resume</label>
+                                {% if user.profile.resume %}
+                                <div class="mb-2">
+                                    <a href="{{ user.profile.resume.url }}" target="_blank">Current Resume</a>
+                                </div>
+                                {% endif %}
+                                <input type="file" name="resume" id="id_resume" class="form-control">
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">Professional Information</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-12 mb-3">
+                                <label for="id_skills" class="form-label">Skills</label>
+                                {{ form.skills }}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="id_experience" class="form-label">Experience</label>
+                                {{ form.experience }}
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <label for="id_education" class="form-label">Education</label>
+                                {{ form.education }}
+                            </div>
+                        </div>
+                        
+                        <h5 class="mb-3">Social Links</h5>
+                        <div class="row mb-4">
+                            <div class="col-md-4 mb-3">
+                                <label for="id_linkedin_profile" class="form-label">LinkedIn Profile</label>
+                                {{ form.linkedin_profile }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_github_profile" class="form-label">GitHub Profile</label>
+                                {{ form.github_profile }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label for="id_website" class="form-label">Personal Website</label>
+                                {{ form.website }}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'users:profile' %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
