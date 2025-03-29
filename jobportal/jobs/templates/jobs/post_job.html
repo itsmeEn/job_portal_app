@@ -1,17 +1,17 @@
 {% extends 'base.html' %}
 
-{% block title %}Post a Job | AI Job Portal{% endblock %}
+{% block title %}Post a Job | Worksy{% endblock %}
 
 {% block content %}
 <div class="container py-5">
     <div class="row">
-        <div class="col-md-10 offset-md-1">
-            <div class="card">
+        <div class="col-md-8">
+            <div class="card shadow">
                 <div class="card-header bg-primary text-white">
                     <h4 class="mb-0"><i class="fas fa-briefcase me-2"></i>Post a New Job</h4>
                 </div>
-                <div class="card-body">
-                    <form method="post">
+                <div class="card-body p-4">
+                    <form method="post" id="post-job-form">
                         {% csrf_token %}
                         
                         <h5 class="mb-3">Job Details</h5>
@@ -149,11 +149,144 @@
                         </div>
                         
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                            <a href="{% url 'my_jobs' %}" class="btn btn-secondary me-md-2">Cancel</a>
-                            <button type="submit" class="btn btn-primary">Post Job</button>
+                            <button type="button" class="btn btn-secondary me-md-2" id="preview-job-btn">Preview</button>
+                            <button type="submit" class="btn btn-primary" id="submit-job-btn">Post Job</button>
                         </div>
                     </form>
                 </div>
+            </div>
+        </div>
+        
+        <div class="col-md-4">
+            <div class="card sticky-top" style="top: 20px;">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-lightbulb me-2"></i>Tips for a Great Job Post</h5>
+                </div>
+                <div class="card-body">
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Be specific</strong> with the job title
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Clearly outline</strong> responsibilities and requirements
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Include salary range</strong> to attract qualified candidates
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>List specific skills</strong> needed for the position
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-check-circle text-success me-2"></i>
+                            <strong>Highlight company benefits</strong> and culture
+                        </li>
+                    </ul>
+                    
+                    <div class="alert alert-info mt-3">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Did you know?</strong> Job posts with salary ranges get 30% more applications!
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Job Preview Modal -->
+<div class="modal fade" id="jobPreviewModal" tabindex="-1" aria-labelledby="jobPreviewModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title" id="jobPreviewModalLabel">Job Preview</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="job-preview-content">
+                    <h3 id="preview-title">Job Title</h3>
+                    <h6 class="text-muted" id="preview-company">Company Name</h6>
+                    
+                    <div class="mb-3">
+                        <span class="badge bg-primary me-2" id="preview-job-type">Job Type</span>
+                        <span class="badge bg-secondary me-2" id="preview-experience">Experience Level</span>
+                        <span class="badge bg-info" id="preview-location">Location</span>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Description</h5>
+                        <p id="preview-description">Job description will appear here.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Responsibilities</h5>
+                        <p id="preview-responsibilities">Job responsibilities will appear here.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Requirements</h5>
+                        <p id="preview-requirements">Job requirements will appear here.</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h5>Skills Required</h5>
+                        <div id="preview-skills">
+                            <!-- Skills badges will be added here -->
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h5>Salary Range</h5>
+                                <p id="preview-salary">$0 - $0</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h5>Application Deadline</h5>
+                                <p id="preview-deadline">No deadline set</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="submit-from-preview">Post Job</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Success Modal -->
+<div class="modal fade" id="successModal" tabindex="-1" aria-labelledby="successModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header bg-success text-white">
+                <h5 class="modal-title" id="successModalLabel">Job Posted Successfully</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <i class="fas fa-check-circle text-success fa-5x mb-3"></i>
+                    <h4>Your job has been posted successfully!</h4>
+                    <p>It is now visible to potential candidates.</p>
+                </div>
+                <div class="job-summary p-3 bg-light rounded">
+                    <h5 id="job-title-summary"></h5>
+                    <p class="text-muted" id="job-company-summary"></p>
+                    <div class="d-flex flex-wrap gap-2 mb-2">
+                        <span class="badge bg-primary" id="job-type-summary"></span>
+                        <span class="badge bg-secondary" id="job-location-summary"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <a href="#" class="btn btn-secondary" id="view-job-btn">View Job</a>
+                <a href="{% url 'post_job' %}" class="btn btn-primary">Post Another Job</a>
             </div>
         </div>
     </div>
@@ -161,24 +294,166 @@
 
 {% block extra_js %}
 <script>
-    // Add any JavaScript needed for the form
     document.addEventListener('DOMContentLoaded', function() {
-        // Example: Add a character counter for the description field
+        // Add character counters for text fields
         const descriptionField = document.getElementById('id_description');
-        if (descriptionField) {
-            const charCounter = document.createElement('div');
-            charCounter.className = 'form-text text-end';
-            charCounter.id = 'description-char-counter';
-            descriptionField.parentNode.appendChild(charCounter);
+        const responsibilitiesField = document.getElementById('id_responsibilities');
+        const requirementsField = document.getElementById('id_requirements');
+        
+        function addCharCounter(field, maxChars = 2000) {
+            if (field) {
+                const charCounter = document.createElement('div');
+                charCounter.className = 'form-text text-end';
+                charCounter.id = field.id + '-char-counter';
+                field.parentNode.appendChild(charCounter);
+                
+                function updateCounter() {
+                    const count = field.value.length;
+                    const remaining = maxChars - count;
+                    charCounter.textContent = `${count} characters${maxChars ? ` (${remaining} remaining)` : ''}`;
+                    
+                    if (maxChars && count > maxChars) {
+                        charCounter.classList.add('text-danger');
+                    } else {
+                        charCounter.classList.remove('text-danger');
+                    }
+                }
+                
+                field.addEventListener('input', updateCounter);
+                updateCounter(); // Initial count
+            }
+        }
+        
+        addCharCounter(descriptionField);
+        addCharCounter(responsibilitiesField);
+        addCharCounter(requirementsField);
+        
+        // Preview functionality
+        const previewBtn = document.getElementById('preview-job-btn');
+        const previewModal = new bootstrap.Modal(document.getElementById('jobPreviewModal'));
+        
+        previewBtn.addEventListener('click', function() {
+            // Get form values
+            const title = document.getElementById('id_title').value || 'Job Title';
+            const company = document.getElementById('id_company').options[document.getElementById('id_company').selectedIndex].text || 'Company Name';
+            const jobType = document.getElementById('id_job_type').options[document.getElementById('id_job_type').selectedIndex].text || 'Job Type';
+            const experience = document.getElementById('id_experience_level').options[document.getElementById('id_experience_level').selectedIndex].text || 'Experience Level';
+            const location = document.getElementById('id_location').value || 'Location';
+            const description = document.getElementById('id_description').value || 'No description provided.';
+            const responsibilities = document.getElementById('id_responsibilities').value || 'No responsibilities provided.';
+            const requirements = document.getElementById('id_requirements').value || 'No requirements provided.';
+            const skills = document.getElementById('id_skills_required').value || '';
+            const salaryMin = document.getElementById('id_salary_min').value || '0';
+            const salaryMax = document.getElementById('id_salary_max').value || '0';
+            const deadline = document.getElementById('id_deadline').value;
             
-            function updateCounter() {
-                const count = descriptionField.value.length;
-                charCounter.textContent = `${count} characters`;
+            // Update preview
+            document.getElementById('preview-title').textContent = title;
+            document.getElementById('preview-company').textContent = company;
+            document.getElementById('preview-job-type').textContent = jobType;
+            document.getElementById('preview-experience').textContent = experience;
+            document.getElementById('preview-location').textContent = location;
+            document.getElementById('preview-description').textContent = description;
+            document.getElementById('preview-responsibilities').textContent = responsibilities;
+            document.getElementById('preview-requirements').textContent = requirements;
+            document.getElementById('preview-salary').textContent = `$${salaryMin} - $${salaryMax}`;
+            
+            // Format deadline
+            if (deadline) {
+                const deadlineDate = new Date(deadline);
+                document.getElementById('preview-deadline').textContent = deadlineDate.toLocaleDateString('en-US', { 
+                    weekday: 'long', 
+                    year: 'numeric', 
+                    month: 'long', 
+                    day: 'numeric',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } else {
+                document.getElementById('preview-deadline').textContent = 'No deadline set';
             }
             
-            descriptionField.addEventListener('input', updateCounter);
-            updateCounter(); // Initial count
-        }
+            // Add skills badges
+            const skillsContainer = document.getElementById('preview-skills');
+            skillsContainer.innerHTML = '';
+            if (skills) {
+                const skillsList = skills.split(',').map(skill => skill.trim());
+                skillsList.forEach(skill => {
+                    const badge = document.createElement('span');
+                    badge.className = 'badge bg-light text-dark m-1';
+                    badge.textContent = skill;
+                    skillsContainer.appendChild(badge);
+                });
+            } else {
+                skillsContainer.innerHTML = '<p class="text-muted">No skills specified</p>';
+            }
+            
+            // Show preview modal
+            previewModal.show();
+        });
+        
+        // Submit from preview
+        document.getElementById('submit-from-preview').addEventListener('click', function() {
+            document.getElementById('submit-job-btn').click();
+        });
+        
+        // Handle form submission
+        const form = document.getElementById('post-job-form');
+        const submitBtn = document.getElementById('submit-job-btn');
+        
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            // Show loading state
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span>Posting...';
+            
+            // Submit the form
+            fetch(form.action, {
+                method: 'POST',
+                body: new FormData(form),
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Update success modal with job details
+                    document.getElementById('job-title-summary').textContent = data.job.title;
+                    document.getElementById('job-company-summary').textContent = data.job.company_name;
+                    document.getElementById('job-type-summary').textContent = data.job.job_type_display;
+                    document.getElementById('job-location-summary').textContent = data.job.location;
+                    
+                    // Set view job link
+                    document.getElementById('view-job-btn').href = data.job.url;
+                    
+                    // Close preview modal if open
+                    if (document.querySelector('#jobPreviewModal.show')) {
+                        previewModal.hide();
+                    }
+                    
+                    // Show success modal
+                    const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                    successModal.show();
+                    
+                    // Reset form
+                    form.reset();
+                } else {
+                    // Show error message
+                    alert('There was an error posting the job. Please try again.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('There was an error posting the job. Please try again.');
+            })
+            .finally(() => {
+                // Reset button state
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = 'Post Job';
+            });
+        });
     });
 </script>
 {% endblock %}

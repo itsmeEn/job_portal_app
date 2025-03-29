@@ -21,6 +21,97 @@
     </div>
 </div>
 
+<section class="user-types py-5 bg-light">
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-12 text-center">
+                <h2 class="section-title">Choose Your Path</h2>
+                <p class="lead">Select how you want to use our platform</p>
+            </div>
+        </div>
+        
+        <div class="row">
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-primary text-white text-center">
+                        <h4 class="mb-0">Job Seekers</h4>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <div class="mb-4">
+                            <i class="fas fa-user-graduate fa-5x text-primary"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Looking for a job?</h5>
+                        <p class="card-text mb-4">Find your dream job with AI-powered matching and personalized recommendations.</p>
+                        
+                        <div class="features-list mb-4 text-start">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Browse and apply to jobs</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Get personalized job recommendations</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>AI resume assistant</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Track your applications</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'users:applicant_login' %}" class="btn btn-primary">Login as Job Seeker</a>
+                            <a href="{% url 'users:applicant_signup' %}" class="btn btn-outline-primary">Sign Up as Job Seeker</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-6 mb-4">
+                <div class="card h-100">
+                    <div class="card-header bg-success text-white text-center">
+                        <h4 class="mb-0">Recruiters</h4>
+                    </div>
+                    <div class="card-body text-center p-4">
+                        <div class="mb-4">
+                            <i class="fas fa-user-tie fa-5x text-success"></i>
+                        </div>
+                        <h5 class="card-title mb-3">Hiring talent?</h5>
+                        <p class="card-text mb-4">Find the perfect candidates for your positions with our AI-powered platform.</p>
+                        
+                        <div class="features-list mb-4 text-start">
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Post and manage job listings</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Review applications</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Schedule interviews</span>
+                            </div>
+                            <div class="d-flex align-items-center mb-2">
+                                <i class="fas fa-check-circle text-success me-2"></i>
+                                <span>Manage candidate pipeline</span>
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'users:recruiter_login' %}" class="btn btn-success">Login as Recruiter</a>
+                            <a href="{% url 'users:recruiter_signup' %}" class="btn btn-outline-success">Sign Up as Recruiter</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
 <section class="featured-jobs py-5">
     <div class="container">
         <h2 class="section-title mb-4">Featured Jobs</h2>
@@ -71,5 +162,11 @@
         </div>
     </div>
 </section>
+
+<style>
+    .features-list {
+        font-size: 0.95rem;
+    }
+</style>
 {% endblock %}
 

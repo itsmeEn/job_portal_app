@@ -1,0 +1,245 @@
+{% extends 'base.html' %}
+
+{% block title %}Resume Assistant | Worksy{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <!-- Conversation List Sidebar -->
+        <div class="col-md-3">
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Conversations</h5>
+                    <a href="{% url 'users:new_chatbot_conversation' %}" class="btn btn-sm btn-light">
+                        <i class="fas fa-plus"></i>
+                    </a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="list-group list-group-flush">
+                        {% for conversation in conversations %}
+                        <a href="{% url 'users:select_chatbot_conversation' conversation.id %}" 
+                           class="list-group-item list-group-item-action {% if active_conversation.id == conversation.id %}active{% endif %}">
+                            <div class="d-flex w-100 justify-content-between">
+                                <h6 class="mb-1 text-truncate">{{ conversation.title }}</h6>
+                                <small>{{ conversation.updated_at|date:"M d" }}</small>
+                            </div>
+                            <small class="text-truncate d-block">
+                                {% with last_message=conversation.messages.last %}
+                                {% if last_message %}
+                                    {% if last_message.message_type == 'USER' %}You: {% endif %}
+                                    {{ last_message.content|truncatechars:40 }}
+                                {% else %}
+                                    New conversation
+                                {% endif %}
+                                {% endwith %}
+                            </small>
+                        </a>
+                        {% empty %}
+                        <div class="list-group-item text-center py-4">
+                            <p class="text-muted mb-0">No conversations yet</p>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>How I Can Help</h5>
+                </div>
+                <div class="card-body">
+                    <p class="mb-3">I'm powered by OpenAI's advanced language model to provide personalized assistance with:</p>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item">
+                            <i class="fas fa-file-alt text-primary me-2"></i>Resume improvement and optimization
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-comments text-primary me-2"></i>Interview preparation and common questions
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-search text-primary me-2"></i>Job search strategies and techniques
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-tools text-primary me-2"></i>Skills assessment and development plans
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-envelope text-primary me-2"></i>Cover letter writing and customization
+                        </li>
+                        <li class="list-group-item">
+                            <i class="fas fa-handshake text-primary me-2"></i>Salary negotiation tactics
+                        </li>
+                    </ul>
+                    <div class="alert alert-info mt-3 mb-0">
+                        <i class="fas fa-lightbulb me-2"></i>Tip: Be specific with your questions for the most helpful responses!
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Chat Area -->
+        <div class="col-md-9">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-robot me-2"></i>AI Resume Assistant</h5>
+                </div>
+                <div class="card-body p-0">
+                    <!-- Chat Messages -->
+                    <div class="chat-messages p-4" id="chat-messages">
+                        {% for message in messages %}
+                        <div class="message {% if message.message_type == 'USER' %}message-user{% else %}message-bot{% endif %} mb-3">
+                            <div class="message-content p-3 rounded">
+                                {{ message.content|linebreaks }}
+                            </div>
+                            <div class="message-meta text-muted small mt-1">
+                                {{ message.created_at|date:"M d, Y, g:i a" }}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Chat Input -->
+                    <div class="chat-input p-3 border-top">
+                        <form id="chatbot-form" method="post">
+                            {% csrf_token %}
+                            <div class="input-group">
+                                {{ form.message }}
+                                <button type="submit" class="btn btn-primary" id="send-message-btn">
+                                    <i class="fas fa-paper-plane"></i>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .chat-messages {
+        height: 500px;
+        overflow-y: auto;
+    }
+    
+    .message-user {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    
+    .message-bot {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .message-user .message-content {
+        background-color: #4361ee;
+        color: white;
+        max-width: 80%;
+    }
+    
+    .message-bot .message-content {
+        background-color: #f8f9fa;
+        max-width: 80%;
+    }
+    
+    .message-meta {
+        font-size: 0.8rem;
+    }
+    
+    #chatbot-message-input {
+        resize: none;
+    }
+    
+    .list-group-item.active {
+        background-color: #4361ee;
+        border-color: #4361ee;
+    }
+</style>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const chatMessages = document.getElementById('chat-messages');
+        const chatForm = document.getElementById('chatbot-form');
+        const messageInput = document.getElementById('chatbot-message-input');
+        const sendButton = document.getElementById('send-message-btn');
+        
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Scroll to bottom on page load
+        scrollToBottom();
+        
+        // Handle form submission
+        chatForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Disable input and button while sending
+            messageInput.disabled = true;
+            sendButton.disabled = true;
+            
+            // Get CSRF token
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            
+            // Send message via AJAX
+            fetch('{% url "users:send_chatbot_message" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrfToken,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ message: message })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Clear input
+                messageInput.value = '';
+                
+                // Add user message to chat
+                const userMessageDiv = document.createElement('div');
+                userMessageDiv.className = 'message message-user mb-3';
+                userMessageDiv.innerHTML = `
+                    <div class="message-content p-3 rounded">${data.user_message.content.replace(/\n/g, '<br>')}</div>
+                    <div class="message-meta text-muted small mt-1">${data.user_message.created_at}</div>
+                `;
+                chatMessages.appendChild(userMessageDiv);
+                
+                // Add bot message to chat
+                const botMessageDiv = document.createElement('div');
+                botMessageDiv.className = 'message message-bot mb-3';
+                botMessageDiv.innerHTML = `
+                    <div class="message-content p-3 rounded">${data.bot_message.content.replace(/\n/g, '<br>')}</div>
+                    <div class="message-meta text-muted small mt-1">${data.bot_message.created_at}</div>
+                `;
+                chatMessages.appendChild(botMessageDiv);
+                
+                // Scroll to bottom
+                scrollToBottom();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('An error occurred while sending your message. Please try again.');
+            })
+            .finally(() => {
+                // Re-enable input and button
+                messageInput.disabled = false;
+                sendButton.disabled = false;
+                messageInput.focus();
+            });
+        });
+        
+        // Focus input on page load
+        messageInput.focus();
+    });
+</script>
+{% endblock %}
+{% endblock %}
+

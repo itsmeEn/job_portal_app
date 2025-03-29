@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}Activation Failed - Worksy{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header bg-danger text-white">
+                    <h4 class="mb-0">Account Activation Failed</h4>
+                </div>
+                <div class="card-body text-center">
+                    <i class="fas fa-exclamation-circle text-danger" style="font-size: 64px;"></i>
+                    <h5 class="mt-4">Invalid Activation Link</h5>
+                    <p class="mb-4">The activation link you clicked is invalid or has expired. This could be because:</p>
+                    <ul class="list-unstyled">
+                        <li>The link has expired (valid for 3 days only)</li>
+                        <li>The account has already been activated</li>
+                        <li>The activation link was modified or corrupted</li>
+                    </ul>
+                    <div class="mt-4">
+                        <p>Please try signing up again or contact support if you continue to have issues.</p>
+                        <a href="{% url 'users:applicant_signup' %}" class="btn btn-primary me-2">Sign Up as Job Seeker</a>
+                        <a href="{% url 'users:recruiter_signup' %}" class="btn btn-primary">Sign Up as Recruiter</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

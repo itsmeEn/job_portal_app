@@ -1,5 +1,7 @@
 from django import forms
 from .models import Job, JobApplication, JobCategory, Interview
+from django.utils import timezone
+from datetime import timedelta
 
 class JobSearchForm(forms.Form):
     keyword = forms.CharField(
@@ -18,6 +20,29 @@ class JobSearchForm(forms.Form):
     )
     job_type = forms.ChoiceField(
         choices=[('', 'All Types')] + list(Job.JOB_TYPE_CHOICES),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    experience_level = forms.ChoiceField(
+        choices=[('', 'Any Experience')] + list(Job.EXPERIENCE_LEVEL_CHOICES),
+        required=False,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    salary_min = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Min Salary'})
+    )
+    salary_max = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'form-control', 'placeholder': 'Max Salary'})
+    )
+    posted_within = forms.ChoiceField(
+        choices=[
+            ('', 'Any Time'),
+            ('1', 'Last 24 Hours'),
+            ('7', 'Last Week'),
+            ('30', 'Last Month'),
+        ],
         required=False,
         widget=forms.Select(attrs={'class': 'form-select'})
     )

@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}Browse Jobs | AI Job Portal{% endblock %}
+{% block title %}Browse Jobs | Worksy{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -11,7 +11,7 @@
                     <h4 class="mb-0"><i class="fas fa-search me-2"></i>Search Jobs</h4>
                 </div>
                 <div class="card-body">
-                    <form method="get" action="{% url 'job_list' %}">
+                    <form method="get" action="{% url 'job_list' %}" id="job-search-form">
                         <div class="row">
                             <div class="col-md-4 mb-3">
                                 <label for="id_keyword" class="form-label">Keyword</label>
@@ -35,6 +35,46 @@
                                 </button>
                             </div>
                         </div>
+                        
+                        <!-- Advanced Search Options (initially hidden) -->
+                        <div class="row mt-2 advanced-search-options" style="display: none;">
+                            <div class="col-md-3 mb-3">
+                                <label for="id_experience_level" class="form-label">Experience Level</label>
+                                <select name="experience_level" id="id_experience_level" class="form-select">
+                                    <option value="">Any Experience</option>
+                                    <option value="ENTRY">Entry Level</option>
+                                    <option value="MID">Mid Level</option>
+                                    <option value="SENIOR">Senior Level</option>
+                                    <option value="EXECUTIVE">Executive</option>
+                                </select>
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="id_salary_min" class="form-label">Minimum Salary</label>
+                                <input type="number" name="salary_min" id="id_salary_min" class="form-control" placeholder="Min Salary">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="id_salary_max" class="form-label">Maximum Salary</label>
+                                <input type="number" name="salary_max" id="id_salary_max" class="form-control" placeholder="Max Salary">
+                            </div>
+                            <div class="col-md-3 mb-3">
+                                <label for="id_posted_within" class="form-label">Posted Within</label>
+                                <select name="posted_within" id="id_posted_within" class="form-select">
+                                    <option value="">Any Time</option>
+                                    <option value="1">Last 24 Hours</option>
+                                    <option value="7">Last Week</option>
+                                    <option value="30">Last Month</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-12 text-end">
+                                <button type="button" class="btn btn-link toggle-advanced-search">
+                                    <span class="show-advanced">Show Advanced Search</span>
+                                    <span class="hide-advanced" style="display: none;">Hide Advanced Search</span>
+                                </button>
+                            </div>
+                        </div>
                     </form>
                 </div>
             </div>
@@ -47,13 +87,24 @@
                 <h2>Available Jobs</h2>
                 <div>
                     <span class="text-muted">{{ page_obj.paginator.count }} jobs found</span>
+                    <div class="btn-group ms-3">
+                        <button type="button" class="btn btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                            Sort By
+                        </button>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="newest">Newest First</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="oldest">Oldest First</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="salary-high">Highest Salary</a></li>
+                            <li><a class="dropdown-item sort-option" href="#" data-sort="salary-low">Lowest Salary</a></li>
+                        </ul>
+                    </div>
                 </div>
             </div>
             
             {% if page_obj %}
             <div class="job-list">
                 {% for job in page_obj %}
-                <div class="card mb-4">
+                <div class="card mb-4 job-card" data-posted-date="{{ job.posted_date|date:'U' }}" data-salary-min="{{ job.salary_min|default:'0' }}" data-salary-max="{{ job.salary_max|default:'0' }}">
                     <div class="card-body">
                         <div class="row">
                             <div class="col-md-2 text-center mb-3 mb-md-0">
@@ -157,5 +208,72 @@
         </div>
     </div>
 </div>
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toggle advanced search options
+        const toggleBtn = document.querySelector('.toggle-advanced-search');
+        const advancedOptions = document.querySelector('.advanced-search-options');
+        const showText = document.querySelector('.show-advanced');
+        const hideText = document.querySelector('.hide-advanced');
+        
+        toggleBtn.addEventListener('click', function() {
+            if (advancedOptions.style.display === 'none') {
+                advancedOptions.style.display = 'flex';
+                showText.style.display = 'none';
+                hideText.style.display = 'inline';
+            } else {
+                advancedOptions.style.display = 'none';
+                showText.style.display = 'inline';
+                hideText.style.display = 'none';
+            }
+        });
+        
+        // Sort functionality
+        const sortOptions = document.querySelectorAll('.sort-option');
+        const jobList = document.querySelector('.job-list');
+        const jobCards = document.querySelectorAll('.job-card');
+        
+        sortOptions.forEach(option => {
+            option.addEventListener('click', function(e) {
+                e.preventDefault();
+                const sortBy = this.dataset.sort;
+                const jobCardsArray = Array.from(jobCards);
+                
+                switch(sortBy) {
+                    case 'newest':
+                        jobCardsArray.sort((a, b) => {
+                            return parseInt(b.dataset.postedDate) - parseInt(a.dataset.postedDate);
+                        });
+                        break;
+                    case 'oldest':
+                        jobCardsArray.sort((a, b) => {
+                            return parseInt(a.dataset.postedDate) - parseInt(b.dataset.postedDate);
+                        });
+                        break;
+                    case 'salary-high':
+                        jobCardsArray.sort((a, b) => {
+                            return parseInt(b.dataset.salaryMax) - parseInt(a.dataset.salaryMax);
+                        });
+                        break;
+                    case 'salary-low':
+                        jobCardsArray.sort((a, b) => {
+                            const aMin = parseInt(a.dataset.salaryMin) || Number.MAX_SAFE_INTEGER;
+                            const bMin = parseInt(b.dataset.salaryMin) || Number.MAX_SAFE_INTEGER;
+                            return aMin - bMin;
+                        });
+                        break;
+                }
+                
+                // Reorder the DOM
+                jobCardsArray.forEach(card => {
+                    jobList.appendChild(card);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}
 {% endblock %}
 

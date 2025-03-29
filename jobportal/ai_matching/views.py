@@ -3,7 +3,6 @@ from django.contrib.auth.decorators import login_required
 from .services import JobMatchingService
 from .models import JobRecommendation
 
-
 @login_required
 def job_recommendations(request):
     # Get existing recommendations or generate new ones

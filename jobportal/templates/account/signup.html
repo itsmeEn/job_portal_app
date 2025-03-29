@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+
+{% load i18n %}
+{% load account socialaccount %}
+
+{% block title %}{% trans "Sign Up" %} | Worksy{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white text-center py-3">
+                    <h3 class="mb-0">{% trans "Sign Up" %}</h3>
+                </div>
+                <div class="card-body p-4">
+                    {% get_providers as socialaccount_providers %}
+                    
+                    {% if socialaccount_providers %}
+                    <div class="social-login mb-4">
+                        <p class="text-center mb-3">{% trans "Sign up with one of your existing accounts:" %}</p>
+                        <div class="d-flex justify-content-center gap-2 mb-3">
+                            {% for provider in socialaccount_providers %}
+                            <a href="{% provider_login_url provider.id process='login' %}" 
+                               class="btn {% if provider.id == 'google' %}btn-danger{% elif provider.id == 'github' %}btn-dark{% elif provider.id == 'linkedin' %}btn-primary{% else %}btn-secondary{% endif %}">
+                                {% if provider.id == 'google' %}
+                                <i class="fab fa-google me-2"></i>
+                                {% elif provider.id == 'github' %}
+                                <i class="fab fa-github me-2"></i>
+                                {% elif provider.id == 'linkedin' %}
+                                <i class="fab fa-linkedin me-2"></i>
+                                {% else %}
+                                <i class="fas fa-external-link-alt me-2"></i>
+                                {% endif %}
+                                {{ provider.name }}
+                            </a>
+                            {% endfor %}
+                        </div>
+                        <div class="separator text-center mb-3">
+                            <span class="bg-white px-3 text-muted">{% trans "or" %}</span>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <form class="signup" id="signup_form" method="post" action="{% url 'account_signup' %}">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">
+                            <p class="mb-0">{% trans "Please correct the errors below:" %}</p>
+                            {% for field in form %}
+                                {% for error in field.errors %}
+                                <p class="mb-0">{{ field.label }}: {{ error }}</p>
+                                {% endfor %}
+                            {% endfor %}
+                            {% for error in form.non_field_errors %}
+                            <p class="mb-0">{{ error }}</p>
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                        
+                        <div class="mb-3">
+                            <label for="id_username" class="form-label">{% trans "Username" %}</label>
+                            <input type="text" name="username" placeholder="{% trans 'Username' %}" autocomplete="username" minlength="1" maxlength="150" class="form-control" id="id_username" required>
+                            <div class="form-text">{% trans "Required. 150 characters or fewer. Letters, digits and @/./+/-/_ only." %}</div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_email" class="form-label">{% trans "Email" %}</label>
+                            <input type="email" name="email" placeholder="{% trans 'Email' %}" autocomplete="email" class="form-control" id="id_email" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_password1" class="form-label">{% trans "Password" %}</label>
+                            <input type="password" name="password1" placeholder="{% trans 'Password' %}" autocomplete="new-password" class="form-control" id="id_password1" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="id_password2" class="form-label">{% trans "Password (again)" %}</label>
+                            <input type="password" name="password2" placeholder="{% trans 'Password (again)' %}" autocomplete="new-password" class="form-control" id="id_password2" required>
+                        </div>
+                        
+                        {% if redirect_field_value %}
+                        <input type="hidden" name="{{ redirect_field_name }}" value="{{ redirect_field_value }}" />
+                        {% endif %}
+                        
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" type="submit">{% trans "Sign Up" %}</button>
+                        </div>
+                    </form>
+                </div>
+                <div class="card-footer text-center py-3">
+                    <p class="mb-0">{% trans "Already have an account?" %} <a href="{% url 'account_login' %}" class="text-decoration-none">{% trans "Sign in" %}</a></p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .separator {
+        display: flex;
+        align-items: center;
+        text-align: center;
+        color: #6c757d;
+    }
+    
+    .separator::before,
+    .separator::after {
+        content: '';
+        flex: 1;
+        border-bottom: 1px solid #dee2e6;
+    }
+    
+    .separator::before {
+        margin-right: 0.25em;
+    }
+    
+    .separator::after {
+        margin-left: 0.25em;
+    }
+</style>
+{% endblock %}
+

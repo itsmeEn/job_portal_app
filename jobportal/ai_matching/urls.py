@@ -6,3 +6,4 @@ urlpatterns = [
     path('recommendations/refresh/', views.refresh_recommendations, name='refresh_recommendations'),
     path('skill-analysis/', views.skill_analysis, name='skill_analysis'),
 ]
+

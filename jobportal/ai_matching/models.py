@@ -21,3 +21,4 @@ class SkillsMatrix(models.Model):
     
     def __str__(self):
         return self.skill_name
+

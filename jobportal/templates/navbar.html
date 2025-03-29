@@ -1,7 +1,8 @@
+{% load user_filters %}
 <nav class="navbar navbar-expand-lg navbar-dark">
     <div class="container">
         <a class="navbar-brand" href="{% url 'home' %}">
-            <i class="fas fa-briefcase me-2"></i>AI Job Portal
+            <i class="fas fa-briefcase me-2"></i>Worksy
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
             <span class="navbar-toggler-icon"></span>
@@ -11,34 +12,72 @@
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'home' %}">Home</a>
                 </li>
+                
+                {% if user.is_authenticated %}
+                    {% if user.profile.role == 'APPLICANT' %}
+                    <!-- Job Seeker Navigation -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:applicant_dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'job_list' %}">Browse Jobs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'job_recommendations' %}">Recommendations</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'application_dashboard' %}">My Applications</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:chatbot' %}">
+                            <i class="fas fa-robot me-1"></i>Resume Assistant
+                        </a>
+                    </li>
+                    {% elif user.profile.role == 'RECRUITER' %}
+                    <!-- Recruiter Navigation -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'users:recruiter_dashboard' %}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'post_job' %}">Post a Job</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'my_jobs' %}">My Jobs</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'employer_dashboard' %}">Applications</a>
+                    </li>
+                    {% else %}
+                    <!-- No Role Selected -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'job_list' %}">Browse Jobs</a>
+                    </li>
+                    {% endif %}
+                {% else %}
+                <!-- Not Logged In -->
                 <li class="nav-item">
                     <a class="nav-link" href="{% url 'job_list' %}">Browse Jobs</a>
                 </li>
-                {% if user.is_authenticated %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'job_recommendations' %}">Recommendations</a>
-                </li>
                 {% endif %}
                 <li class="nav-item">
-                    <a class="nav-link" href="{% url 'post_job' %}">Post a Job</a>
+                    <a class="nav-link" href="{% url 'users:search_users' %}">
+                        <i class="fas fa-users me-1"></i>Find Users
+                    </a>
                 </li>
             </ul>
             <ul class="navbar-nav">
                 {% if user.is_authenticated %}
-                <!-- Notifications Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-bell"></i>
-                        {% with unread_notifications=user.notifications.all %}
-                            {% if unread_notifications %}
-                                <span class="notification-badge">{{ unread_notifications.count }}</span>
-                            {% endif %}
-                        {% endwith %}
+                        {% if unread_notifications_count > 0 %}
+                        <span class="notification-badge">{{ unread_notifications_count }}</span>
+                        {% endif %}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown">
-                        {% for notification in user.notifications.all|slice:":5" %}
+                        {% for notification in recent_notifications %}
                         <li>
-                            <a class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}" href="{{ notification.link }}">
+                            <a class="dropdown-item {% if not notification.is_read %}fw-bold{% endif %}" href="{{ notification.link|default:'#' }}">
                                 {{ notification.title }}
                                 <small class="text-muted d-block">{{ notification.created_at|timesince }} ago</small>
                             </a>
@@ -47,37 +86,28 @@
                         <li><span class="dropdown-item">No notifications</span></li>
                         {% endfor %}
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-center" href="{% url 'notifications' %}">View All</a></li>
+                        <li><a class="dropdown-item text-center" href="{% url 'users:notifications' %}">View All</a></li>
                     </ul>
                 </li>
-
-                <!-- Messages Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="messagesDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         <i class="fas fa-envelope"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="messagesDropdown">
-                        {% for conversation in user.conversations.all|slice:":5" %}
+                        {% for conversation in recent_conversations %}
                         <li>
                             <a class="dropdown-item" href="{% url 'conversation_detail' conversation.id %}">
-                                {% with other_users=conversation.participants.all %}
-                                    {% for other_user in other_users %}
-                                        {{ other_user }}
-                                    {% empty %}
-                                        <span>No participants available.</span>
-                                    {% endfor %}
-                                {% endwith %}
+                                {{ conversation|other_participant:user }}
+                                <small class="text-muted d-block">{{ conversation.updated_at|timesince }} ago</small>
                             </a>
                         </li>
                         {% empty %}
                         <li><span class="dropdown-item">No messages</span></li>
                         {% endfor %}
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-center" href="{% url 'message_list' %}">View All</a></li>
+                        <li><a class="dropdown-item text-center" href="{% url 'users:message_list' %}">View All</a></li>
                     </ul>
                 </li>
-
-                <!-- User Profile Dropdown -->
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
                         {% if user.profile.profile_picture %}
@@ -88,23 +118,49 @@
                         {{ user.username }}
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="userDropdown">
-                        <li><a class="dropdown-item" href="{% url 'profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+                        <li><a class="dropdown-item" href="{% url 'users:profile' %}"><i class="fas fa-user me-2"></i>My Profile</a></li>
+                        
+                        {% if user.profile.role == 'APPLICANT' %}
+                        <!-- Job Seeker Profile Menu -->
+                        <li><a class="dropdown-item" href="{% url 'users:applicant_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
                         <li><a class="dropdown-item" href="{% url 'application_dashboard' %}"><i class="fas fa-clipboard-list me-2"></i>My Applications</a></li>
-                        <li><a class="dropdown-item" href="{% url 'my_jobs' %}"><i class="fas fa-briefcase me-2"></i>My Jobs</a></li>
                         <li><a class="dropdown-item" href="{% url 'skill_analysis' %}"><i class="fas fa-chart-bar me-2"></i>Skill Analysis</a></li>
+                        <li><a class="dropdown-item" href="{% url 'users:chatbot' %}"><i class="fas fa-robot me-2"></i>Resume Assistant</a></li>
+                        {% elif user.profile.role == 'RECRUITER' %}
+                        <!-- Recruiter Profile Menu -->
+                        <li><a class="dropdown-item" href="{% url 'users:recruiter_dashboard' %}"><i class="fas fa-tachometer-alt me-2"></i>Dashboard</a></li>
+                        <li><a class="dropdown-item" href="{% url 'my_jobs' %}"><i class="fas fa-briefcase me-2"></i>My Jobs</a></li>
+                        <li><a class="dropdown-item" href="{% url 'employer_dashboard' %}"><i class="fas fa-users me-2"></i>Applications</a></li>
+                        <li><a class="dropdown-item" href="{% url 'post_job' %}"><i class="fas fa-plus-circle me-2"></i>Post New Job</a></li>
+                        {% endif %}
+                        
                         <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Logout</a></li>
+                        <li><a class="dropdown-item" href="{% url 'account_logout' %}"><i class="fas fa-sign-out-alt me-2"></i>Sign Out</a></li>
                     </ul>
                 </li>
                 {% else %}
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'account_login' %}">Login</a>
+                <!-- Login/Register Buttons for Non-Authenticated Users -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="loginDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-sign-in-alt me-1"></i>Login
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="loginDropdown">
+                        <li><a class="dropdown-item" href="{% url 'users:applicant_login' %}"><i class="fas fa-user-graduate me-2"></i>Login as Job Seeker</a></li>
+                        <li><a class="dropdown-item" href="{% url 'users:recruiter_login' %}"><i class="fas fa-user-tie me-2"></i>Login as Recruiter</a></li>
+                    </ul>
                 </li>
-                <li class="nav-item">
-                    <a class="nav-link" href="{% url 'account_signup' %}">Register</a>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" id="registerDropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-plus me-1"></i>Register
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="registerDropdown">
+                        <li><a class="dropdown-item" href="{% url 'users:applicant_signup' %}"><i class="fas fa-user-graduate me-2"></i>Register as Job Seeker</a></li>
+                        <li><a class="dropdown-item" href="{% url 'users:recruiter_signup' %}"><i class="fas fa-user-tie me-2"></i>Register as Recruiter</a></li>
+                    </ul>
                 </li>
                 {% endif %}
             </ul>
         </div>
     </div>
 </nav>
+

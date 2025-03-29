@@ -3,12 +3,15 @@ from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Q
 from django.contrib import messages
+from django.http import JsonResponse
 from .models import Job, JobApplication, Company, JobCategory
 from .forms import JobSearchForm, JobApplicationForm, JobPostForm
 from django.db.models import Count
 from django.utils import timezone
 from .models import Interview
-
+from django.urls import reverse
+from datetime import timedelta
+from notifications.models import Notification
 
 def home(request):
     featured_jobs = Job.objects.filter(is_active=True).order_by('-posted_date')[:6]
@@ -29,12 +32,18 @@ def job_list(request):
         location = form.cleaned_data.get('location')
         category = form.cleaned_data.get('category')
         job_type = form.cleaned_data.get('job_type')
+        experience_level = form.cleaned_data.get('experience_level')
+        salary_min = form.cleaned_data.get('salary_min')
+        salary_max = form.cleaned_data.get('salary_max')
+        posted_within = form.cleaned_data.get('posted_within')
         
+        # Basic search filters
         if keyword:
             jobs = jobs.filter(
                 Q(title__icontains=keyword) | 
                 Q(description__icontains=keyword) |
-                Q(skills_required__icontains=keyword)
+                Q(skills_required__icontains=keyword) |
+                Q(company__name__icontains=keyword)
             )
         
         if location:
@@ -45,6 +54,24 @@ def job_list(request):
         
         if job_type:
             jobs = jobs.filter(job_type=job_type)
+        
+        # Advanced search filters
+        if experience_level:
+            jobs = jobs.filter(experience_level=experience_level)
+        
+        if salary_min:
+            jobs = jobs.filter(salary_min__gte=salary_min)
+        
+        if salary_max:
+            jobs = jobs.filter(salary_max__lte=salary_max)
+        
+        if posted_within:
+            days = int(posted_within)
+            date_threshold = timezone.now() - timedelta(days=days)
+            jobs = jobs.filter(posted_date__gte=date_threshold)
+    
+    # Default sorting by most recent
+    jobs = jobs.order_by('-posted_date')
     
     paginator = Paginator(jobs, 10)
     page_number = request.GET.get('page')
@@ -91,6 +118,16 @@ def apply_for_job(request, job_id):
             application.job = job
             application.applicant = request.user
             application.save()
+            
+            # Create notification for job poster
+            Notification.objects.create(
+                user=job.posted_by,
+                notification_type='NEW_APPLICATION',
+                title='New Job Application',
+                message=f'{request.user.username} has applied for {job.title}',
+                link=f'/jobs/{job.id}/'
+            )
+            
             messages.success(request, 'Your application has been submitted successfully!')
             return redirect('job_detail', job_id=job.id)
     else:
@@ -104,12 +141,32 @@ def apply_for_job(request, job_id):
 
 @login_required
 def post_job(request):
+    # Check if user is a recruiter
+    if request.user.profile.role != 'RECRUITER':
+        messages.warning(request, 'You need to be a recruiter to post jobs.')
+        return redirect('role_selection')
+    
     if request.method == 'POST':
         form = JobPostForm(request.POST)
         if form.is_valid():
             job = form.save(commit=False)
             job.posted_by = request.user
             job.save()
+            
+            # If AJAX request, return JSON response
+            if request.headers.get('X-Requested-With') == 'XMLHttpRequest':
+                return JsonResponse({
+                    'success': True,
+                    'job': {
+                        'id': job.id,
+                        'title': job.title,
+                        'company_name': job.company.name,
+                        'job_type_display': job.get_job_type_display(),
+                        'location': job.location,
+                        'url': reverse('job_detail', args=[job.id])
+                    }
+                })
+            
             messages.success(request, 'Job posted successfully!')
             return redirect('job_detail', job_id=job.id)
     else:
@@ -122,6 +179,11 @@ def post_job(request):
 
 @login_required
 def my_jobs(request):
+    # Check if user is a recruiter
+    if request.user.profile.role != 'RECRUITER' and not request.user.is_staff:
+        messages.warning(request, 'You need to be a recruiter to access this page.')
+        return redirect('role_selection')
+    
     posted_jobs = Job.objects.filter(posted_by=request.user)
     applications = JobApplication.objects.filter(applicant=request.user)
     
@@ -133,6 +195,11 @@ def my_jobs(request):
 
 @login_required
 def application_dashboard(request):
+    # Check if user is an applicant
+    if request.user.profile.role != 'APPLICANT' and not request.user.is_staff:
+        messages.warning(request, 'You need to be a job seeker to access this page.')
+        return redirect('role_selection')
+    
     # For job seekers
     applications = JobApplication.objects.filter(applicant=request.user)
     
@@ -151,6 +218,7 @@ def application_dashboard(request):
     ).order_by('scheduled_date')
     
     context = {
+        'applications': applications,
         'pending': pending,
         'reviewing': reviewing,
         'shortlisted': shortlisted,
@@ -162,18 +230,22 @@ def application_dashboard(request):
 
 @login_required
 def employer_dashboard(request):
-    # For employers
-    if not request.user.is_authenticated:
-        return redirect('login')
+    # Check if user is a recruiter
+    if request.user.profile.role != 'RECRUITER' and not request.user.is_staff:
+        messages.warning(request, 'You need to be a recruiter to access this page.')
+        return redirect('role_selection')
     
     # Get jobs posted by the user
     jobs = Job.objects.filter(posted_by=request.user)
     
+    # Get active jobs count
+    active_jobs_count = jobs.filter(is_active=True).count()
+    
     # Get applications for those jobs
     applications = JobApplication.objects.filter(job__in=jobs)
     
-    # Count applications by status
-    status_counts = applications.values('status').annotate(count=Count('status'))
+    # Get pending applications count
+    pending_applications_count = applications.filter(status='PENDING').count()
     
     # Get recent applications
     recent_applications = applications.order_by('-applied_date')[:10]
@@ -187,8 +259,9 @@ def employer_dashboard(request):
     
     context = {
         'jobs': jobs,
+        'active_jobs_count': active_jobs_count,
         'applications': applications,
-        'status_counts': status_counts,
+        'pending_applications_count': pending_applications_count,
         'recent_applications': recent_applications,
         'interviews': interviews,
     }

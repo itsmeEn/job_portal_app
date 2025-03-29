@@ -1,17 +1,10 @@
 from django.contrib import admin
-from .models import UserProfile, Notification, Conversation, Message
+from .models import UserProfile, Conversation, Message
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
     list_display = ('user', 'location', 'phone_number')
     search_fields = ('user__username', 'user__email', 'location')
-
-@admin.register(Notification)
-class NotificationAdmin(admin.ModelAdmin):
-    list_display = ('user', 'notification_type', 'title', 'is_read', 'created_at')
-    list_filter = ('notification_type', 'is_read', 'created_at')
-    search_fields = ('user__username', 'title', 'message')
-    date_hierarchy = 'created_at'
 
 @admin.register(Conversation)
 class ConversationAdmin(admin.ModelAdmin):

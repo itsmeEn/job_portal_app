@@ -1,5 +1,7 @@
 from django import forms
 from .models import UserProfile
+from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.models import User
 
 class UserProfileForm(forms.ModelForm):
     first_name = forms.CharField(max_length=30, required=False)
@@ -37,4 +39,63 @@ class MessageForm(forms.Form):
         widget=forms.Textarea(attrs={'rows': 3, 'class': 'form-control', 'placeholder': 'Type your message here...'}),
         label=''
     )
+
+class ChatbotMessageForm(forms.Form):
+    message = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'rows': 3, 
+            'class': 'form-control', 
+            'placeholder': 'Ask me about resume help, interview tips, or job search advice...',
+            'id': 'chatbot-message-input'
+        }),
+        label='',
+        required=True
+    )
+
+class RecruiterSignupForm(UserCreationForm):
+    email = forms.EmailField(
+        required=True,
+        widget=forms.EmailInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your email'
+        })
+    )
+    company_name = forms.CharField(
+        max_length=100,
+        required=True,
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Enter your company name'
+        })
+    )
+    
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'company_name', 'password1', 'password2')
+        widgets = {
+            'username': forms.TextInput(attrs={
+                'class': 'form-control',
+                'placeholder': 'Choose a username'
+            }),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['password1'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter your password'
+        })
+        self.fields['password2'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Confirm your password'
+        })
+    
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.email = self.cleaned_data['email']
+        if commit:
+            user.save()
+            # Create UserProfile if it doesn't exist
+            UserProfile.objects.get_or_create(user=user)
+        return user
 

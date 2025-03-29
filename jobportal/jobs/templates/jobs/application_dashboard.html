@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 
-{% block title %}My Applications | AI Job Portal{% endblock %}
+{% block title %}My Applications | Worksy{% endblock %}
 
 {% block content %}
 <div class="container py-5">
@@ -8,6 +8,58 @@
         <div class="col-md-12">
             <h2><i class="fas fa-clipboard-list me-2"></i>My Applications</h2>
             <p class="lead">Track the status of your job applications</p>
+        </div>
+    </div>
+    
+    <!-- Application Stats -->
+    <div class="row mb-4">
+        <div class="col-md-2">
+            <div class="card text-center h-100">
+                <div class="card-body">
+                    <h1 class="display-4">{{ applications.count }}</h1>
+                    <p class="text-muted mb-0">Total Applications</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center h-100 bg-warning text-dark">
+                <div class="card-body">
+                    <h1 class="display-4">{{ pending.count }}</h1>
+                    <p class="mb-0">Pending</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center h-100 bg-info text-white">
+                <div class="card-body">
+                    <h1 class="display-4">{{ reviewing.count }}</h1>
+                    <p class="mb-0">Reviewing</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center h-100 bg-primary text-white">
+                <div class="card-body">
+                    <h1 class="display-4">{{ shortlisted.count }}</h1>
+                    <p class="mb-0">Shortlisted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center h-100 bg-success text-white">
+                <div class="card-body">
+                    <h1 class="display-4">{{ accepted.count }}</h1>
+                    <p class="mb-0">Accepted</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <div class="card text-center h-100 bg-danger text-white">
+                <div class="card-body">
+                    <h1 class="display-4">{{ rejected.count }}</h1>
+                    <p class="mb-0">Rejected</p>
+                </div>
+            </div>
         </div>
     </div>
     
@@ -30,7 +82,7 @@
                     </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="shortlisted-tab" data-bs-toggle="tab" data-bs-target="#shortlisted" type="button" role="tab" aria-controls="shortlisted" aria-selected="false">
+                    <button class="nav-link" id="shortlisted-tab" data-bs-toggle="tab" data-bs-target="#shortlisted" type="button  id="shortlisted-tab" data-bs-toggle="tab" data-bs-target="#shortlisted" type="button" role="tab" aria-controls="shortlisted" aria-selected="false">
                         Shortlisted <span class="badge bg-primary ms-1">{{ shortlisted.count }}</span>
                     </button>
                 </li>
@@ -195,6 +247,106 @@
             </div>
         </div>
     </div>
+    
+    <!-- Application Timeline -->
+    <div class="row">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Application Timeline</h5>
+                </div>
+                <div class="card-body">
+                    {% if applications %}
+                    <div class="timeline">
+                        {% for application in applications|slice:":10" %}
+                        <div class="timeline-item">
+                            <div class="timeline-marker">
+                                {% if application.status == 'PENDING' %}
+                                <i class="fas fa-clock text-warning"></i>
+                                {% elif application.status == 'REVIEWING' %}
+                                <i class="fas fa-search text-info"></i>
+                                {% elif application.status == 'SHORTLISTED' %}
+                                <i class="fas fa-list-ol text-primary"></i>
+                                {% elif application.status == 'ACCEPTED' %}
+                                <i class="fas fa-check-circle text-success"></i>
+                                {% elif application.status == 'REJECTED' %}
+                                <i class="fas fa-times-circle text-danger"></i>
+                                {% endif %}
+                            </div>
+                            <div class="timeline-content">
+                                <h6 class="mb-1">{{ application.job.title }} at {{ application.job.company.name }}</h6>
+                                <p class="text-muted mb-1">
+                                    <small>
+                                        <i class="far fa-calendar me-1"></i>Applied on {{ application.applied_date|date:"F d, Y" }}
+                                        <span class="mx-2">|</span>
+                                        <i class="fas fa-tag me-1"></i>Status: 
+                                        <span class="badge bg-{{ application.status|lower }}">
+                                            {{ application.get_status_display }}
+                                        </span>
+                                    </small>
+                                </p>
+                                <p class="mb-0">
+                                    <a href="{% url 'job_detail' application.job.id %}" class="btn btn-sm btn-outline-primary">
+                                        <i class="fas fa-eye me-1"></i>View Job
+                                    </a>
+                                    {% if application.resume %}
+                                    <a href="{{ application.resume.url }}" class="btn btn-sm btn-outline-secondary" target="_blank">
+                                        <i class="fas fa-file-alt me-1"></i>View Resume
+                                    </a>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-clipboard-list fa-4x text-muted mb-3"></i>
+                        <h5>No Applications Yet</h5>
+                        <p class="text-muted">You haven't applied to any jobs yet.</p>
+                        <a href="{% url 'job_list' %}" class="btn btn-primary mt-2">Browse Jobs</a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding-left: 40px;
+        margin-top: 20px;
+    }
+    
+    .timeline-item {
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .timeline-marker {
+        position: absolute;
+        left: -40px;
+        width: 30px;
+        height: 30px;
+        background-color: #f8f9fa;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 0 4px white, 0 0 0 5px #dee2e6;
+    }
+    
+    .timeline-item:not(:last-child)::after {
+        content: '';
+        position: absolute;
+        left: -25px;
+        top: 30px;
+        height: calc(100% - 10px);
+        width: 2px;
+        background-color: #dee2e6;
+    }
+</style>
 {% endblock %}
 
